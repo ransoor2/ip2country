@@ -3,13 +3,13 @@ package main
 import (
 	"log"
 
-	"github.com/evrone/go-clean-template/config"
-	"github.com/evrone/go-clean-template/internal/app"
+	"github.com/ransoor2/ip2country/config"
+	"github.com/ransoor2/ip2country/internal/app"
 )
 
 func main() {
 	// Configuration
-	cfg, err := config.NewConfig()
+	cfg, err := config.NewConfig("./config/config.yml")
 	if err != nil {
 		log.Fatalf("Config error: %s", err)
 	}

@@ -1,0 +1,17 @@
+[
+  {
+    "ip": "2.22.233.255",
+    "city": "Sample City",
+    "country": "Sample Country"
+  },
+  {
+    "ip": "8.8.8.8",
+    "city": "Mountain View",
+    "country": "United States"
+  },
+  {
+    "ip": "1.1.1.1",
+    "city": "Research",
+    "country": "Australia"
+  }
+]

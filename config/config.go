@@ -2,62 +2,72 @@ package config
 
 import (
 	"fmt"
-
+	"github.com/go-playground/validator/v10"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type (
 	// Config -.
 	Config struct {
-		App  `yaml:"app"`
-		HTTP `yaml:"http"`
-		Log  `yaml:"logger"`
-		PG   `yaml:"postgres"`
-		RMQ  `yaml:"rabbitmq"`
+		App             `yaml:"app"`
+		HTTP            `yaml:"http"`
+		Log             `yaml:"logger"`
+		Cache           `yaml:"cache"`
+		Repository      `yaml:"repository"`
+		DiskRepository  `yaml:"diskRepository"`
+		MongoRepository `yaml:"mongoRepository"`
 	}
 
 	// App -.
 	App struct {
-		Name    string `env-required:"true" yaml:"name"    env:"APP_NAME"`
-		Version string `env-required:"true" yaml:"version" env:"APP_VERSION"`
+		Name    string `yaml:"name" env:"APP_NAME" validate:"required"`
+		Version string `yaml:"version" env:"APP_VERSION" validate:"required"`
 	}
 
 	// HTTP -.
 	HTTP struct {
-		Port string `env-required:"true" yaml:"port" env:"HTTP_PORT"`
+		Port string `yaml:"port" env:"HTTP_PORT" validate:"required"`
 	}
 
 	// Log -.
 	Log struct {
-		Level string `env-required:"true" yaml:"log_level"   env:"LOG_LEVEL"`
+		Level string `yaml:"log_level" env:"LOG_LEVEL" validate:"required"`
 	}
 
-	// PG -.
-	PG struct {
-		PoolMax int    `env-required:"true" yaml:"pool_max" env:"PG_POOL_MAX"`
-		URL     string `env-required:"true"                 env:"PG_URL"`
+	Cache struct {
+		Size int `yaml:"size" env:"CACHE_SIZE" validate:"required"`
 	}
 
-	// RMQ -.
-	RMQ struct {
-		ServerExchange string `env-required:"true" yaml:"rpc_server_exchange" env:"RMQ_RPC_SERVER"`
-		ClientExchange string `env-required:"true" yaml:"rpc_client_exchange" env:"RMQ_RPC_CLIENT"`
-		URL            string `env-required:"true"                            env:"RMQ_URL"`
+	Repository struct {
+		Type string `yaml:"type" env:"REPOSITORY_TYPE" validate:"required,oneof=disk mongo"`
+	}
+
+	DiskRepository struct {
+		RelativePath string `yaml:"relativePath" env:"DISK_REPOSITORY_RELATIVE_PATH"`
+	}
+
+	MongoRepository struct {
+		URI        string `yaml:"uri" env:"MONGO_REPOSITORY_URI"`
+		DB         string `yaml:"db" env:"MONGO_REPOSITORY_DB"`
+		Collection string `yaml:"collection" env:"MONGO_REPOSITORY_COLLECTION"`
 	}
 )
 
 // NewConfig returns app config.
-func NewConfig() (*Config, error) {
+func NewConfig(path string) (*Config, error) {
 	cfg := &Config{}
 
-	err := cleanenv.ReadConfig("./config/config.yml", cfg)
-	if err != nil {
+	if err := cleanenv.ReadConfig(path, cfg); err != nil {
 		return nil, fmt.Errorf("config error: %w", err)
 	}
 
-	err = cleanenv.ReadEnv(cfg)
-	if err != nil {
+	if err := cleanenv.ReadEnv(cfg); err != nil {
 		return nil, err
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(cfg); err != nil {
+		return nil, fmt.Errorf("validation error: %w", err)
 	}
 
 	return cfg, nil

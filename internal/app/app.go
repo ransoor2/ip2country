@@ -3,52 +3,44 @@ package app
 
 import (
 	"fmt"
+	"github.com/ransoor2/ip2country/internal/ip2country"
+	"github.com/ransoor2/ip2country/internal/repositories/disk_repository"
+	"github.com/ransoor2/ip2country/internal/repositories/mongo_repository"
+	"github.com/ransoor2/ip2country/pkg/cache"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/evrone/go-clean-template/config"
-	amqprpc "github.com/evrone/go-clean-template/internal/controller/amqp_rpc"
-	v1 "github.com/evrone/go-clean-template/internal/controller/http/v1"
-	"github.com/evrone/go-clean-template/internal/usecase"
-	"github.com/evrone/go-clean-template/internal/usecase/repo"
-	"github.com/evrone/go-clean-template/internal/usecase/webapi"
-	"github.com/evrone/go-clean-template/pkg/httpserver"
-	"github.com/evrone/go-clean-template/pkg/logger"
-	"github.com/evrone/go-clean-template/pkg/postgres"
-	"github.com/evrone/go-clean-template/pkg/rabbitmq/rmq_rpc/server"
+	"github.com/ransoor2/ip2country/config"
+	v1 "github.com/ransoor2/ip2country/internal/controller/http/v1"
+	"github.com/ransoor2/ip2country/pkg/httpserver"
+	"github.com/ransoor2/ip2country/pkg/logger"
 )
 
 // Run creates objects via constructors.
 func Run(cfg *config.Config) {
 	l := logger.New(cfg.Log.Level)
 
-	// Repository
-	pg, err := postgres.New(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.PoolMax))
+	// Cache
+	cacheInst, err := cache.New(cfg.Cache.Size)
 	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
+		l.Fatal(fmt.Errorf("app - Run - cacheInst.New: %w", err))
 	}
-	defer pg.Close()
+
+	// Repository
+	repo, err := initializeRepository(cfg)
+	if err != nil {
+		l.Fatal(fmt.Errorf("app - Run - initializeRepository: %w", err))
+	}
 
 	// Use case
-	translationUseCase := usecase.New(
-		repo.New(pg),
-		webapi.New(),
-	)
-
-	// RabbitMQ RPC Server
-	rmqRouter := amqprpc.NewRouter(translationUseCase)
-
-	rmqServer, err := server.New(cfg.RMQ.URL, cfg.RMQ.ServerExchange, rmqRouter, l)
-	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - rmqServer - server.New: %w", err))
-	}
+	ip2CountryService := ip2country.New(repo, l, cacheInst)
 
 	// HTTP Server
 	handler := gin.New()
-	v1.NewRouter(handler, l, translationUseCase)
+	v1.NewRouter(handler, l, ip2CountryService)
 	httpServer := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 
 	// Waiting signal
@@ -60,8 +52,6 @@ func Run(cfg *config.Config) {
 		l.Info("app - Run - signal: " + s.String())
 	case err = <-httpServer.Notify():
 		l.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
-	case err = <-rmqServer.Notify():
-		l.Error(fmt.Errorf("app - Run - rmqServer.Notify: %w", err))
 	}
 
 	// Shutdown
@@ -70,8 +60,15 @@ func Run(cfg *config.Config) {
 		l.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
 	}
 
-	err = rmqServer.Shutdown()
-	if err != nil {
-		l.Error(fmt.Errorf("app - Run - rmqServer.Shutdown: %w", err))
+}
+
+func initializeRepository(cfg *config.Config) (ip2country.Repository, error) {
+	switch cfg.Repository.Type {
+	case "mongo":
+		return mongo_repository.New(cfg.MongoRepository.URI, cfg.MongoRepository.DB, cfg.MongoRepository.Collection)
+	case "disk":
+		return disk_repository.New(cfg.DiskRepository.RelativePath)
+	default:
+		return nil, fmt.Errorf("app - initializeRepository - unknown repository type: %s", cfg.Repository.Type)
 	}
 }

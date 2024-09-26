@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ip2country-deployment
+  namespace: ip2country
+  labels:
+    app: ip2country
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ip2country
+  template:
+    metadata:
+      labels:
+        app: ip2country
+    spec:
+      containers:
+        - name: ip2country
+          image: kind.local/ip2country:latest
+          imagePullPolicy: Never
+          command: ["/app"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DISK_REPOSITORY_RELATIVE_PATH
+              value: "/config/data.json"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+            - name: data-volume
+              mountPath: /config/data.json
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: config-volume
+          configMap:
+            name: ip2country-config
+        - name: data-volume
+          configMap:
+            name: ip2country-data

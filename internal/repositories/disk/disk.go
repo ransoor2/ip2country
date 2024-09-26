@@ -1,4 +1,4 @@
-package disk_repository
+package disk
 
 import (
 	"context"
@@ -51,7 +51,7 @@ func New(path string) (Repository, error) {
 	return repo, nil
 }
 
-func (r Repository) CountryNCityByIP(ctx context.Context, ip string) (string, string, error) {
+func (r Repository) CountryNCityByIP(_ context.Context, ip string) (country, city string, err error) {
 	if countryCity, exists := r.data[ip]; exists {
 		return countryCity.Country, countryCity.City, nil
 	}

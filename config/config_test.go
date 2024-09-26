@@ -30,7 +30,7 @@ mongoRepository:
 	assert.NoError(t, err)
 	defer os.Remove(tmpFile.Name())
 
-	_, err = tmpFile.Write([]byte(yamlContent))
+	_, err = tmpFile.WriteString(yamlContent)
 	assert.NoError(t, err)
 	err = tmpFile.Close()
 	assert.NoError(t, err)
@@ -86,7 +86,7 @@ mongoRepository:
 	assert.NoError(t, err)
 	defer os.Remove(tmpFile.Name())
 
-	_, err = tmpFile.Write([]byte(yamlContent))
+	_, err = tmpFile.WriteString(yamlContent)
 	assert.NoError(t, err)
 	err = tmpFile.Close()
 	assert.NoError(t, err)

@@ -1,32 +1,31 @@
 package test
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/ransoor2/ip2country/config"
-	v1 "github.com/ransoor2/ip2country/internal/controller/http/v1"
-	"github.com/ransoor2/ip2country/internal/ip2country"
-	"github.com/ransoor2/ip2country/internal/repositories/disk_repository"
-	"github.com/ransoor2/ip2country/pkg/cache"
-	"github.com/ransoor2/ip2country/pkg/httpserver"
-	"github.com/ransoor2/ip2country/pkg/logger"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
-	"github.com/valyala/fasthttp/fasthttputil"
 	"net/http"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/ransoor2/ip2country/config"
+	v1 "github.com/ransoor2/ip2country/internal/controller/http/v1"
+	"github.com/ransoor2/ip2country/internal/ip2country"
+	"github.com/ransoor2/ip2country/internal/repositories/disk"
+	"github.com/ransoor2/ip2country/pkg/cache"
+	"github.com/ransoor2/ip2country/pkg/httpserver"
+	"github.com/ransoor2/ip2country/pkg/logger"
 )
 
 type APITestSuite struct {
 	suite.Suite
-	listener *fasthttputil.InmemoryListener
-	client   *http.Client
-	server   *httpserver.Server
+	client *http.Client
+	server *httpserver.Server
 }
 
 func (s *APITestSuite) SetupSuite() {
-	s.listener = fasthttputil.NewInmemoryListener()
 	s.client = &http.Client{}
 
 	// Configuration
@@ -40,7 +39,7 @@ func (s *APITestSuite) SetupSuite() {
 	assert.NoError(s.T(), err)
 
 	// Repository
-	repo, err := disk_repository.New(cfg.DiskRepository.RelativePath)
+	repo, err := disk.New(cfg.DiskRepository.RelativePath)
 	assert.NoError(s.T(), err)
 
 	// Use case
@@ -72,8 +71,7 @@ func TestAPITestSuite(t *testing.T) {
 }
 
 func (s *APITestSuite) TearDownSuite() {
-	s.listener.Close()
-	s.server.Shutdown()
+	assert.NoError(s.T(), s.server.Shutdown())
 }
 
 func (s *APITestSuite) TestGetCountryNCityByIPHappy() {

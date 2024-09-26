@@ -21,7 +21,7 @@ import (
 // @version     1.0
 // @host        localhost:8080
 // @BasePath    /v1
-func NewRouter(handler *gin.Engine, logger logger.Interface, ip2CountryService IP2CountryService) {
+func NewRouter(handler *gin.Engine, l logger.Interface, ip2CountryService IP2CountryService) {
 	// Options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
@@ -39,6 +39,6 @@ func NewRouter(handler *gin.Engine, logger logger.Interface, ip2CountryService I
 	// Routers
 	routerGroup := handler.Group("/v1")
 
-	newIPToCountryRoutes(routerGroup, ip2CountryService, logger)
+	newIPToCountryRoutes(routerGroup, ip2CountryService, l)
 
 }

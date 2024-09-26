@@ -3,10 +3,6 @@ package app
 
 import (
 	"fmt"
-	"github.com/ransoor2/ip2country/internal/ip2country"
-	"github.com/ransoor2/ip2country/internal/repositories/disk_repository"
-	"github.com/ransoor2/ip2country/internal/repositories/mongo_repository"
-	"github.com/ransoor2/ip2country/pkg/cache"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,6 +11,10 @@ import (
 
 	"github.com/ransoor2/ip2country/config"
 	v1 "github.com/ransoor2/ip2country/internal/controller/http/v1"
+	"github.com/ransoor2/ip2country/internal/ip2country"
+	"github.com/ransoor2/ip2country/internal/repositories/disk"
+	"github.com/ransoor2/ip2country/internal/repositories/mongo"
+	"github.com/ransoor2/ip2country/pkg/cache"
 	"github.com/ransoor2/ip2country/pkg/httpserver"
 	"github.com/ransoor2/ip2country/pkg/logger"
 )
@@ -65,9 +65,9 @@ func Run(cfg *config.Config) {
 func initializeRepository(cfg *config.Config) (ip2country.Repository, error) {
 	switch cfg.Repository.Type {
 	case "mongo":
-		return mongo_repository.New(cfg.MongoRepository.URI, cfg.MongoRepository.DB, cfg.MongoRepository.Collection)
+		return mongo.New(cfg.MongoRepository.URI, cfg.MongoRepository.DB, cfg.MongoRepository.Collection)
 	case "disk":
-		return disk_repository.New(cfg.DiskRepository.RelativePath)
+		return disk.New(cfg.DiskRepository.RelativePath)
 	default:
 		return nil, fmt.Errorf("app - initializeRepository - unknown repository type: %s", cfg.Repository.Type)
 	}

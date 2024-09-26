@@ -1,4 +1,4 @@
-package mongo_repository
+package mongo
 
 import (
 	"context"
@@ -26,14 +26,14 @@ func New(uri, dbName, collectionName string) (Repository, error) {
 	return Repository{client: client, collection: collection}, nil
 }
 
-func (r Repository) CountryNCityByIP(ctx context.Context, ip string) (string, string, error) {
+func (r Repository) CountryNCityByIP(ctx context.Context, ip string) (country, city string, err error) {
 	var result struct {
 		Country string `bson:"country"`
 		City    string `bson:"city"`
 	}
 
 	filter := bson.M{"ip": ip}
-	err := r.collection.FindOne(ctx, filter).Decode(&result)
+	err = r.collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return "", "", fmt.Errorf("no document found for IP: %s", ip)

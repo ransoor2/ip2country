@@ -1,4 +1,4 @@
-package disk_repository
+package disk
 
 import (
 	"os"
@@ -17,7 +17,7 @@ func TestNew(t *testing.T) {
         {"ip": "1.1.1.1", "city": "Research", "country": "Australia"}
     ]`
 	sampleFilePath := filepath.Join(tempDir, "data.json")
-	if err := os.WriteFile(sampleFilePath, []byte(sampleData), 0644); err != nil {
+	if err := os.WriteFile(sampleFilePath, []byte(sampleData), 0600); err != nil {
 		t.Fatalf("Failed to write sample JSON file: %v", err)
 	}
 

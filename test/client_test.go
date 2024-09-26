@@ -3,7 +3,8 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -15,22 +16,14 @@ type findCountryResponse struct {
 	City    string `json:"city"`
 }
 
-func (s *APITestSuite) getCountryNCityByIP(ip string) (string, string, int, error) {
+func (s *APITestSuite) getCountryNCityByIP(ip string) (country, city string, statusCode int, err error) {
 	uri := fmt.Sprintf("%s?ip=%s", baseURI, ip)
 	response, err := s.client.Get(uri)
-	statusCode := response.StatusCode
-	if err != nil {
-		return "", "", statusCode, err
-	}
-	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-		if err != nil {
-			s.T().Errorf("error closing response body: %v", err)
-		}
-	}(response.Body)
+	defer assert.NoError(s.T(), response.Body.Close())
 
+	statusCode = response.StatusCode
 	var result findCountryResponse
-	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
 		return "", "", statusCode, err
 	}
 

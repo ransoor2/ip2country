@@ -16,5 +16,5 @@ repository:
   type: 'disk'
 
 diskRepository:
-  relativePath: 'internal/repositories/disk_repository/data.json'
+  relativePath: 'internal/repositories/disk/data.json'
 

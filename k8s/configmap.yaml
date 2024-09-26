@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ip2country-config
+  namespace: ip2country
+data:
+  config.yml: |
+    app:
+      name: 'ip2country'
+      version: '1.0.0'
+    http:
+      port: '8080'
+    logger:
+      log_level: 'debug'
+      rollbar_env: 'ip2country'
+    cache:
+      size: 10
+    repository:
+      type: 'disk'
+    diskRepository:
+      relativePath: '/config/data.json'
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ip2country-data
+  namespace: ip2country
+data:
+  data.json: |
+    [
+      {
+        "ip": "2.22.233.255",
+        "city": "Sample City",
+        "country": "Sample Country"
+      },
+      {
+        "ip": "8.8.8.8",
+        "city": "Mountain View",
+        "country": "United States"
+      },
+      {
+        "ip": "1.1.1.1",
+        "city": "Research",
+        "country": "Australia"
+      },
+      {
+        "ip": "3.3.3.3",
+        "city": "Torq City",
+        "country": "Torqland"
+      }
+    ]

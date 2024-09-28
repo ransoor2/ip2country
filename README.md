@@ -125,6 +125,12 @@ docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:lat
 
 Redis Insight UI is available at: `localhost:8001`
 
+Note - in order to run with both Redis and Ip2Country in docker, you need to set up a docker network or use docker bridge. To use docker bridge
+```sh
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' redis-stack
+docker run -e RATE_LIMITER_REDIS_ADDR=172.17.0.2:6379 -p 8080:8080 ip2country:latest
+```
+
 ## Running in Kubernetes
 
 To create a Kubernetes cluster and install the application:

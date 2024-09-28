@@ -19,7 +19,11 @@ type findCountryResponse struct {
 func (s *APITestSuite) getCountryNCityByIP(ip string) (country, city string, statusCode int, err error) {
 	uri := fmt.Sprintf("%s?ip=%s", baseURI, ip)
 	response, err := s.client.Get(uri)
-	defer assert.NoError(s.T(), response.Body.Close())
+	assert.NoError(s.T(), err)
+	defer func() {
+		closeErr := response.Body.Close()
+		assert.NoError(s.T(), closeErr)
+	}()
 
 	statusCode = response.StatusCode
 	var result findCountryResponse

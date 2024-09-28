@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/ilyakaznacheev/cleanenv"
@@ -17,6 +18,7 @@ type (
 		Repository      `yaml:"repository"`
 		DiskRepository  `yaml:"diskRepository"`
 		MongoRepository `yaml:"mongoRepository"`
+		RateLimiter     `yaml:"rateLimiter"`
 	}
 
 	// App -.
@@ -51,6 +53,15 @@ type (
 		URI        string `yaml:"uri" env:"MONGO_REPOSITORY_URI"`
 		DB         string `yaml:"db" env:"MONGO_REPOSITORY_DB"`
 		Collection string `yaml:"collection" env:"MONGO_REPOSITORY_COLLECTION"`
+	}
+
+	RateLimiter struct {
+		Type          string        `yaml:"type" env:"RATE_LIMITER_TYPE" validate:"required,oneof=local distributed"`
+		MaxRequests   int           `yaml:"maxRequests" env:"RATE_LIMITER_MAX_REQUESTS" env-default:"100"`
+		UserRequests  int           `yaml:"userRequests" env:"RATE_LIMITER_USER_REQUESTS" env-default:"5"`
+		Interval      time.Duration `yaml:"interval" env:"RATE_LIMITER_INTERVAL" env-default:"1s"`
+		BucketTTL     time.Duration `yaml:"bucketTTL" env:"RATE_LIMITER_BUCKET_TTL" env-default:"10s"`
+		CleanInterval time.Duration `yaml:"cleanInterval" env:"RATE_LIMITER_CLEAN_INTERVAL" env-default:"10s"`
 	}
 )
 

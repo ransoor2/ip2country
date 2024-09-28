@@ -3,6 +3,7 @@ package test
 import (
 	"net/http"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -17,12 +18,14 @@ import (
 	"github.com/ransoor2/ip2country/pkg/cache"
 	"github.com/ransoor2/ip2country/pkg/httpserver"
 	"github.com/ransoor2/ip2country/pkg/logger"
+	"github.com/ransoor2/ip2country/pkg/ratelimiter"
 )
 
 type APITestSuite struct {
 	suite.Suite
 	client *http.Client
 	server *httpserver.Server
+	wg     sync.WaitGroup
 }
 
 func (s *APITestSuite) SetupSuite() {
@@ -45,14 +48,22 @@ func (s *APITestSuite) SetupSuite() {
 	// Use case
 	ip2CountryService := ip2country.New(repo, l, cacheInst)
 
+	// Rate Limiter
+	rateLimiter := ratelimiter.NewLocalRateLimiter(cfg.RateLimiter)
+
 	// HTTP Server
 	handler := gin.New()
-	v1.NewRouter(handler, l, ip2CountryService)
+	v1.NewRouter(handler, l, ip2CountryService, rateLimiter)
 
+	s.wg.Add(1)
 	// Run
+	go func() {
+		defer s.wg.Done()
+		s.server = httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
+	}()
 
-	go func() { s.server = httpserver.New(handler, httpserver.Port(cfg.HTTP.Port)) }()
 	// Wait for listener to start
+	s.wg.Wait()
 	assert.Eventually(s.T(),
 		func() bool {
 			res, err := s.client.Get("http://localhost:8080/healthz")

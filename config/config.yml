@@ -18,3 +18,10 @@ repository:
 diskRepository:
   relativePath: 'internal/repositories/disk/data.json'
 
+rateLimiter:
+  type: 'local'
+  maxRequests: 100
+  userRequests: 10
+  interval: 100s
+  bucketTTL: 10s
+  cleanInterval: 10s

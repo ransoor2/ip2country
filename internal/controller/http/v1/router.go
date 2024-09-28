@@ -14,6 +14,10 @@ import (
 	"github.com/ransoor2/ip2country/pkg/logger"
 )
 
+type RateLimiter interface {
+	Allow(clientIP string) bool
+}
+
 // NewRouter -.
 // Swagger spec:
 // @title       IP2CountryNCity API
@@ -21,7 +25,8 @@ import (
 // @version     1.0
 // @host        localhost:8080
 // @BasePath    /v1
-func NewRouter(handler *gin.Engine, l logger.Interface, ip2CountryService IP2CountryService) {
+func NewRouter(handler *gin.Engine, l logger.Interface, ip2CountryService IP2CountryService,
+	rateLimiter RateLimiter) {
 	// Options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
@@ -38,7 +43,19 @@ func NewRouter(handler *gin.Engine, l logger.Interface, ip2CountryService IP2Cou
 
 	// Routers
 	routerGroup := handler.Group("/v1")
+	routerGroup.Use(rateLimiterMiddleware(rateLimiter))
 
 	newIPToCountryRoutes(routerGroup, ip2CountryService, l)
 
+}
+
+func rateLimiterMiddleware(rl RateLimiter) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		clientIP := c.ClientIP()
+		if !rl.Allow(clientIP) {
+			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded"})
+			return
+		}
+		c.Next()
+	}
 }

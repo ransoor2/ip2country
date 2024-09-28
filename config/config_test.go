@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -25,6 +26,11 @@ mongoRepository:
   uri: "mongodb://localhost:27017"
   db: "testdb"
   collection: "testcollection"
+rateLimiter:
+  type: "local"
+  maxRequests: 100
+  userRequests: 5
+  interval: 1s
 `
 	tmpFile, err := os.CreateTemp("", "config-*.yml")
 	assert.NoError(t, err)
@@ -45,6 +51,10 @@ mongoRepository:
 	os.Setenv("MONGO_REPOSITORY_URI", "mongodb://envhost:27017")
 	os.Setenv("MONGO_REPOSITORY_DB", "envdb")
 	os.Setenv("MONGO_REPOSITORY_COLLECTION", "envcollection")
+	os.Setenv("RATE_LIMITER_TYPE", "distributed")
+	os.Setenv("RATE_LIMITER_MAX_REQUESTS", "150")
+	os.Setenv("RATE_LIMITER_USER_REQUESTS", "10")
+	os.Setenv("RATE_LIMITER_INTERVAL", "2s")
 	defer os.Clearenv()
 
 	// Load configuration
@@ -61,6 +71,10 @@ mongoRepository:
 	assert.Equal(t, "mongodb://envhost:27017", cfg.MongoRepository.URI)
 	assert.Equal(t, "envdb", cfg.MongoRepository.DB)
 	assert.Equal(t, "envcollection", cfg.MongoRepository.Collection)
+	assert.Equal(t, "distributed", cfg.RateLimiter.Type)
+	assert.Equal(t, 150, cfg.RateLimiter.MaxRequests)
+	assert.Equal(t, 10, cfg.RateLimiter.UserRequests)
+	assert.Equal(t, 2*time.Second, cfg.RateLimiter.Interval)
 }
 
 func TestInvalidRepositoryType(t *testing.T) {
@@ -81,6 +95,11 @@ mongoRepository:
   uri: "mongodb://localhost:27017"
   db: "testdb"
   collection: "testcollection"
+rateLimiter:
+  type: "local"
+  maxRequests: 100
+  userRequests: 5
+  interval: 1s
 `
 	tmpFile, err := os.CreateTemp("", "config-*.yml")
 	assert.NoError(t, err)

@@ -34,7 +34,7 @@ lint: $(GOLANGCI_LINT)
 	$(GOLANGCI_LINT) run --fast
 
 test: ### run test
-	go test -v -cover -race ./internal/...
+	go test -v -cover -race ./internal/... ./pkg/... ./test/...
 .PHONY: test
 
 docker-build: ### build docker image

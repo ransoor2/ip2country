@@ -113,6 +113,11 @@ Curl command to get country and city by IP:
 curl "http://localhost:8080/v1/find-country?ip=8.8.8.8"
 ```
 
+To run a distributed rate limiter with Redis change the `RateLimiter.Type` to `distributed` and provide the `RateLimiter.RedisAddr` in the `config/config.yml` file.
+```sh
+docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+```
+
 ## Running in Kubernetes
 
 To create a Kubernetes cluster and install the application:

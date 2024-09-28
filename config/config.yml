@@ -19,7 +19,7 @@ diskRepository:
   relativePath: 'internal/repositories/disk/data.json'
 
 rateLimiter:
-  type: 'distributed'
+  type: 'local'
   maxRequests: 10
   userRequests: 5
   interval: 10s

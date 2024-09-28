@@ -106,6 +106,11 @@ To build a Docker image:
 make docker-build
 ```
 
+To run the application:
+```sh
+make docker-run
+```
+
 Once the docker is running you can access the API at `http://localhost:8080/swagger/index.html#`.
 
 Curl command to get country and city by IP:
@@ -117,6 +122,8 @@ To run a distributed rate limiter with Redis change the `RateLimiter.Type` to `d
 ```sh
 docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
 ```
+
+Redis Insight UI is available at: `localhost:8001`
 
 ## Running in Kubernetes
 

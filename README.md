@@ -139,6 +139,13 @@ To create a Kubernetes cluster and install the application:
 make kind-install
 ```
 
+This will create:
+- A Kubernetes cluster using [KinD](https://kind.sigs.k8s.io/) with 2 worker nodes and 1 control plane node.
+- A deployment with 3 replicas of the application.
+- A configmap to provide the configuration to the application + IP2Country database.
+- A service to expose the application.
+- A Redis deployment and service for the distributed rate limiter.
+
 Once the application is running in the Kubernetes cluster:
 ```sh
 curl "http://localhost:30000/v1/find-country?ip=3.3.3.3"

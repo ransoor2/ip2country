@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ransoor2/ip2country/config"
+	"github.com/ransoor2/ip2country/pkg/logger"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +18,7 @@ func TestLocalRateLimiter(t *testing.T) {
 		CleanInterval: time.Second * 10,
 		BucketTTL:     time.Second * 5,
 	}
-	rl := NewLocalRateLimiter(cfg, nil)
+	rl := NewLocalRateLimiter(cfg, logger.New("debug"))
 
 	clientIP := "192.168.1.1"
 

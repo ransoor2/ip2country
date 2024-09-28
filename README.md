@@ -172,6 +172,8 @@ type Repository interface {
 }
 ```
 
+Then add the implementation in the `repository` package, the appropriate config in the `config/config.yml` file, and update the `initializeRepository` function in the `app.go`.
+
 ### Rate Limiting
 
 To support another kind of rate limiting, the following interface needs to be implemented:
@@ -181,6 +183,8 @@ type RateLimiter interface {
  Allow(ctx context.Context, clientIP string) bool
 }
 ```
+
+Then add the implementation in the `ratelimiter` package, the appropriate config in the `config/config.yml` file, and update the `getRateLimiter` function in `app.go`.
 
 ### Things to Improve
 
@@ -196,3 +200,6 @@ type RateLimiter interface {
 
 - **Versioning**:
     - Add versioning to CICD.
+
+- **Domain Entities**:
+    - Add domain entities for country and city.

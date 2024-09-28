@@ -5,12 +5,18 @@ IP2Country is a Go-based application that provides an API to determine the count
 ## Features
 
 - **HTTP Server**: Provides an API to get country and city information based on IP.
-- **Rate Limiter**: Limits the number of requests (globally and per client IP) to prevent abuse.
+- **Rate Limiter**: Limits the number of requests (globally and per client IP) to prevent abuse (Using Token bucket algorithm).
+    - **Local mode**: Keeps an internal mapping of client IPs and their request counts.
+    - **Distributed mode**: Uses Redis to store client IPs and their request counts.
 - **Caching**: Caches responses to improve performance.
 - **Repositories**:
     - **Disk Repository**: Stores IP to country/city mappings on disk.
     - **MongoDB Repository**: Stores IP to country/city mappings in a MongoDB database.
 - **Testing**: Includes unit and integration tests.
+
+## Sequence Diagram
+
+![IP2Country Service Sequence Diagram](docs/img/diagram.png)
 
 ## Requirements
 
@@ -54,7 +60,7 @@ Configuration is managed via a YAML file and environment variables. The default 
 - **Cache**:
     - `Size`: The size of the cache.
 - **Repository**:
-    - `Type`: The type of repository to use (e.g., disk, mongo).
+    - `Type`: The type of repository to use (disk/mongo).
 - **DiskRepository**:
     - `RelativePath`: The relative path to the disk-based repository file.
 - **MongoRepository**:
@@ -62,12 +68,13 @@ Configuration is managed via a YAML file and environment variables. The default 
     - `DB`: The name of the MongoDB database.
     - `Collection`: The name of the MongoDB collection.
 - **RateLimiter**:
-    - `Type`: The type of rate limiter to use (e.g., local, distributed).
+    - `Type`: The type of rate limiter to use (local/distributed).
     - `MaxRequests`: The maximum number of requests allowed.
-    - `UserRequests`: The number of allowed requests per user.
-    - `Interval`: The interval for rate limiting.
+    - `UserRequests`: The number of allowed requests per IP.
+    - `Interval`: The interval for rate limiting (buckets refill).
     - `BucketTTL`: The time-to-live for rate limiter buckets.
     - `CleanInterval`: The interval for cleaning up expired rate limiter buckets.
+    - `RedisAddr`: The address of the Redis server (required for distributed rate limiter).
 
 ## Running the Application
 
@@ -91,12 +98,19 @@ To run the tests:
 make test
 ```
 
-## Building Docker Image
+## Running with Docker
 
 To build a Docker image:
 
 ```sh
 make docker-build
+```
+
+Once the docker is running you can access the API at `http://localhost:8080/swagger/index.html#`.
+
+Curl command to get country and city by IP:
+```sh
+curl "http://localhost:8080/v1/find-country?ip=8.8.8.8"
 ```
 
 ## Running in Kubernetes
@@ -105,6 +119,11 @@ To create a Kubernetes cluster and install the application:
 
 ```sh
 make kind-install
+```
+
+Once the application is running in the Kubernetes cluster:
+```sh
+curl "http://localhost:30000/v1/find-country?ip=3.3.3.3"
 ```
 
 To delete the Kubernetes cluster:
@@ -147,6 +166,21 @@ To support another kind of rate limiting, the following interface needs to be im
 
 ```go
 type RateLimiter interface {
- Allow(clientIP string) bool
+ Allow(ctx context.Context, clientIP string) bool
 }
 ```
+
+### Things to Improve
+
+- **Observability**:
+    - Add more logs, metrics and traces.
+
+- **Integration Tests**:
+    - Create integration tests for Redis.
+    - Create integration tests for MongoDB. 
+
+- **HTTP Server**:
+    - Modify the HTTP server to support an in-memory listener for testing purposes. This will allow for more efficient and isolated tests without the need for network dependencies.
+
+- **Versioning**:
+    - Add versioning to CICD.

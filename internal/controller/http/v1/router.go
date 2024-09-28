@@ -2,6 +2,7 @@
 package v1
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,7 @@ import (
 )
 
 type RateLimiter interface {
-	Allow(clientIP string) bool
+	Allow(ctx context.Context, clientIP string) bool
 }
 
 // NewRouter -.
@@ -52,7 +53,7 @@ func NewRouter(handler *gin.Engine, l logger.Interface, ip2CountryService IP2Cou
 func rateLimiterMiddleware(rl RateLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		clientIP := c.ClientIP()
-		if !rl.Allow(clientIP) {
+		if !rl.Allow(c.Request.Context(), clientIP) {
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded"})
 			return
 		}

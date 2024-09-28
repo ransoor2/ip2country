@@ -16,4 +16,6 @@ kind load docker-image kind.local/ip2country:latest --name ip2country
 
 # Apply Kubernetes configurations
 kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/redis
+sleep 10
 kubectl apply -f k8s/

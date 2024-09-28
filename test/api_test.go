@@ -49,7 +49,7 @@ func (s *APITestSuite) SetupSuite() {
 	ip2CountryService := ip2country.New(repo, l, cacheInst)
 
 	// Rate Limiter
-	rateLimiter := ratelimiter.NewLocalRateLimiter(cfg.RateLimiter)
+	rateLimiter := ratelimiter.NewLocalRateLimiter(cfg.RateLimiter, l)
 
 	// HTTP Server
 	handler := gin.New()

@@ -31,6 +31,7 @@ rateLimiter:
   maxRequests: 100
   userRequests: 5
   interval: 1s
+  redisAddr: 'localhost:6379'
 `
 	tmpFile, err := os.CreateTemp("", "config-*.yml")
 	assert.NoError(t, err)
@@ -55,6 +56,7 @@ rateLimiter:
 	os.Setenv("RATE_LIMITER_MAX_REQUESTS", "150")
 	os.Setenv("RATE_LIMITER_USER_REQUESTS", "10")
 	os.Setenv("RATE_LIMITER_INTERVAL", "2s")
+	os.Setenv("RATE_LIMITER_REDIS_ADDR", "localhost:6379")
 	defer os.Clearenv()
 
 	// Load configuration
@@ -75,6 +77,7 @@ rateLimiter:
 	assert.Equal(t, 150, cfg.RateLimiter.MaxRequests)
 	assert.Equal(t, 10, cfg.RateLimiter.UserRequests)
 	assert.Equal(t, 2*time.Second, cfg.RateLimiter.Interval)
+	assert.Equal(t, "localhost:6379", cfg.RateLimiter.RedisAddr)
 }
 
 func TestInvalidRepositoryType(t *testing.T) {
@@ -100,6 +103,7 @@ rateLimiter:
   maxRequests: 100
   userRequests: 5
   interval: 1s
+  redisAddr: 'localhost:6379'
 `
 	tmpFile, err := os.CreateTemp("", "config-*.yml")
 	assert.NoError(t, err)

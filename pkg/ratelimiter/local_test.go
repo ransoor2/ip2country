@@ -1,6 +1,7 @@
 package ratelimiter
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -16,23 +17,23 @@ func TestLocalRateLimiter(t *testing.T) {
 		CleanInterval: time.Second * 10,
 		BucketTTL:     time.Second * 5,
 	}
-	rl := NewLocalRateLimiter(cfg)
+	rl := NewLocalRateLimiter(cfg, nil)
 
 	clientIP := "192.168.1.1"
 
 	// Test allowing requests within the limit
 	for i := 0; i < 5; i++ {
-		assert.True(t, rl.Allow(clientIP), "Request should be allowed")
+		assert.True(t, rl.Allow(context.Background(), clientIP), "Request should be allowed")
 	}
 
 	// Test exceeding the limit
-	assert.False(t, rl.Allow(clientIP), "Request should be denied")
+	assert.False(t, rl.Allow(context.Background(), clientIP), "Request should be denied")
 
 	// Wait for the refill rate duration and test again
 	time.Sleep(time.Second)
 
 	for i := 0; i < 5; i++ {
-		assert.True(t, rl.Allow(clientIP), "Request should be allowed")
+		assert.True(t, rl.Allow(context.Background(), clientIP), "Request should be allowed")
 	}
 }
 
@@ -44,27 +45,27 @@ func TestGlobalRateLimiter(t *testing.T) {
 		CleanInterval: time.Second * 10,
 		BucketTTL:     time.Second * 5,
 	}
-	rl := NewLocalRateLimiter(cfg)
+	rl := NewLocalRateLimiter(cfg, nil)
 
 	clientIP1 := "192.168.1.1"
 	clientIP2 := "192.168.1.2"
 
 	// Test allowing requests within the global limit
 	for i := 0; i < 5; i++ {
-		assert.True(t, rl.Allow(clientIP1), "Request should be allowed for clientIP1")
-		assert.True(t, rl.Allow(clientIP2), "Request should be allowed for clientIP2")
+		assert.True(t, rl.Allow(context.Background(), clientIP1), "Request should be allowed for clientIP1")
+		assert.True(t, rl.Allow(context.Background(), clientIP2), "Request should be allowed for clientIP2")
 	}
 
 	// Test exceeding the global limit
-	assert.False(t, rl.Allow(clientIP1), "Request should be denied for clientIP1")
-	assert.False(t, rl.Allow(clientIP2), "Request should be denied for clientIP2")
+	assert.False(t, rl.Allow(context.Background(), clientIP1), "Request should be denied for clientIP1")
+	assert.False(t, rl.Allow(context.Background(), clientIP2), "Request should be denied for clientIP2")
 
 	// Wait for the refill rate duration and test again
 	time.Sleep(time.Second)
 
 	// Check the global bucket capacity
-	assert.True(t, rl.Allow(clientIP1), "Request should be allowed for clientIP1 after refill")
-	assert.True(t, rl.Allow(clientIP2), "Request should be allowed for clientIP2 after refill")
+	assert.True(t, rl.Allow(context.Background(), clientIP1), "Request should be allowed for clientIP1 after refill")
+	assert.True(t, rl.Allow(context.Background(), clientIP2), "Request should be allowed for clientIP2 after refill")
 }
 
 func TestBucketCleanup(t *testing.T) {
@@ -75,12 +76,12 @@ func TestBucketCleanup(t *testing.T) {
 		CleanInterval: time.Second,
 		BucketTTL:     time.Second * 2,
 	}
-	rl := NewLocalRateLimiter(cfg)
+	rl := NewLocalRateLimiter(cfg, nil)
 
 	clientIP := "192.168.1.1"
 
 	// Allow a request to create the bucket
-	assert.True(t, rl.Allow(clientIP), "Request should be allowed")
+	assert.True(t, rl.Allow(context.Background(), clientIP), "Request should be allowed")
 
 	// Ensure the bucket exists
 	rl.mu.Lock()

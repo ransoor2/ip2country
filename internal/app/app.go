@@ -49,7 +49,7 @@ func Run(cfg *config.Config) {
 	}
 
 	// RateLimiter
-	rateLimiter, err := getRateLimiter(cfg)
+	rateLimiter, err := getRateLimiter(cfg, l)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - getRateLimiter: %w", err))
 	}
@@ -91,12 +91,12 @@ func initializeRepository(cfg *config.Config) (ip2country.Repository, error) {
 	}
 }
 
-func getRateLimiter(cfg *config.Config) (v1.RateLimiter, error) {
+func getRateLimiter(cfg *config.Config, l logger.Interface) (v1.RateLimiter, error) {
 	switch cfg.RateLimiter.Type {
 	case RateLimiterTypeLocal:
-		return ratelimiter.NewLocalRateLimiter(cfg.RateLimiter), nil
+		return ratelimiter.NewLocalRateLimiter(cfg.RateLimiter, l), nil
 	case RateLimiterTypeDistributed:
-		return ratelimiter.NewDistributedRateLimiter(), nil
+		return ratelimiter.NewDistributedRateLimiter(cfg.RateLimiter, l), nil
 	default:
 		return nil, fmt.Errorf("unknown rate limiter type: %s", cfg.RateLimiter.Type)
 	}

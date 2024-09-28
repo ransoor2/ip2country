@@ -1,13 +1,16 @@
 package ratelimiter
 
 import (
+	"context"
 	"sync"
 	"time"
 
 	"github.com/ransoor2/ip2country/config"
+	"github.com/ransoor2/ip2country/pkg/logger"
 )
 
 type LocalRateLimiter struct {
+	log                  logger.Interface
 	buckets              map[string]*Bucket
 	globalBucket         *Bucket
 	mu                   sync.Mutex
@@ -24,7 +27,7 @@ type Bucket struct {
 	lastCheck time.Time
 }
 
-func NewLocalRateLimiter(cfg config.RateLimiter) *LocalRateLimiter {
+func NewLocalRateLimiter(cfg config.RateLimiter, l logger.Interface) *LocalRateLimiter {
 	rl := &LocalRateLimiter{
 		buckets:              make(map[string]*Bucket),
 		globalBucket:         &Bucket{capacity: cfg.MaxRequests, remaining: cfg.MaxRequests, lastCheck: time.Now()},
@@ -33,6 +36,7 @@ func NewLocalRateLimiter(cfg config.RateLimiter) *LocalRateLimiter {
 		refillRate:           cfg.Interval,
 		cleanupInterval:      cfg.CleanInterval,
 		bucketTTL:            cfg.BucketTTL,
+		log:                  l,
 	}
 
 	go rl.cleanupBuckets()
@@ -40,7 +44,7 @@ func NewLocalRateLimiter(cfg config.RateLimiter) *LocalRateLimiter {
 	return rl
 }
 
-func (rl *LocalRateLimiter) Allow(clientIP string) bool {
+func (rl *LocalRateLimiter) Allow(_ context.Context, clientIP string) bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
 

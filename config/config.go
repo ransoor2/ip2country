@@ -62,6 +62,7 @@ type (
 		Interval      time.Duration `yaml:"interval" env:"RATE_LIMITER_INTERVAL" env-default:"1s"`
 		BucketTTL     time.Duration `yaml:"bucketTTL" env:"RATE_LIMITER_BUCKET_TTL" env-default:"10s"`
 		CleanInterval time.Duration `yaml:"cleanInterval" env:"RATE_LIMITER_CLEAN_INTERVAL" env-default:"10s"`
+		RedisAddr     string        `yaml:"redisAddr" env:"RATE_LIMITER_REDIS_ADDR" env-default:"localhost:6379"`
 	}
 )
 

@@ -41,6 +41,10 @@ docker-build: ### build docker image
 	@docker build -t ip2country:latest .
 .PHONY: docker-build
 
+docker-run: ### run docker image
+	@docker run ip2country:latest
+.PHONY: docker-run
+
 kind-install: docker-build ### create kind cluster and install everything
 	./scripts/cluster_install.sh
 .PHONY: kind-install

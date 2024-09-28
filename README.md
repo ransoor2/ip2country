@@ -144,6 +144,8 @@ Once the application is running in the Kubernetes cluster:
 curl "http://localhost:30000/v1/find-country?ip=3.3.3.3"
 ```
 
+This request will be load balanced across the three replicas of the application. You can inspect the rate limiter behavior according to the mode set - local or distributed.
+
 To delete the Kubernetes cluster:
 
 ```sh

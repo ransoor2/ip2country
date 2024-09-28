@@ -211,3 +211,6 @@ Then add the implementation in the `ratelimiter` package, the appropriate config
 
 - **Domain Entities**:
     - Add domain entities for country and city.
+
+- **API**: 
+    - Include a `Retry-After` header in the response when the rate limit is exceeded.

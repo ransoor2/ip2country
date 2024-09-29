@@ -72,8 +72,8 @@ Configuration is managed via a YAML file and environment variables. The default 
     - `MaxRequests`: The maximum number of requests allowed.
     - `UserRequests`: The number of allowed requests per IP.
     - `Interval`: The interval for rate limiting (buckets refill).
-    - `BucketTTL`: The time-to-live for rate limiter buckets.
-    - `CleanInterval`: The interval for cleaning up expired rate limiter buckets.
+    - `BucketTTL`: The time-to-live for rate limiter buckets (local mode only).
+    - `CleanInterval`: The interval for cleaning up expired rate limiter buckets (local mode only).
     - `RedisAddr`: The address of the Redis server (required for distributed rate limiter).
 
 ## Running the Application

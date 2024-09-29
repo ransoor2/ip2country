@@ -52,6 +52,7 @@ func (rl *DistributedRateLimiter) Allow(ctx context.Context, clientIP string) bo
 		return false
 	}
 
+	// If the global bucket is empty, set the expiration time
 	if globalCurrent == 1 {
 		_, err = rl.client.Expire(ctx, globalKey, rl.interval).Result()
 		if err != nil {
@@ -65,6 +66,7 @@ func (rl *DistributedRateLimiter) Allow(ctx context.Context, clientIP string) bo
 		return false
 	}
 
+	// If the client bucket is empty, set the expiration time
 	if clientCurrent == 1 {
 		_, err = rl.client.Expire(ctx, clientKey, rl.interval).Result()
 		if err != nil {
